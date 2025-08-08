@@ -6,6 +6,7 @@ import { redirect } from 'next/navigation';
 import postgres from 'postgres';
 import { signIn } from '@/auth';
 import { AuthError } from 'next-auth';
+import bcrypt from 'bcrypt';
  
 const sql = postgres(process.env.POSTGRES_URL!, { ssl: 'require' });
 
@@ -131,5 +132,54 @@ export async function authenticate(
       }
     }
     throw error;
+  }
+}
+
+export async function register(
+  prevState: string | null,
+  formData: FormData
+): Promise<string | null> {
+  const name = formData.get('name')?.toString().trim();
+  const email = formData.get('email')?.toString().toLowerCase().trim();
+  const password = formData.get('password')?.toString().trim();
+  const confirmPassword = formData.get('confirmPassword')?.toString().trim();
+
+  if (!name || !email || !password || !confirmPassword) {
+    return 'All fields are required.';
+  }
+
+  if (password !== confirmPassword) {
+    return 'Passwords do not match.';
+  }
+
+  if (password.length < 6) {
+    return 'Password must be at least 6 characters.';
+  }
+
+  try {
+    const existingUser = await sql`
+      SELECT * FROM users WHERE email = ${email}
+    `;
+
+    if (existingUser.length > 0) {
+      return 'Email already registered.';
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    await sql`
+      INSERT INTO users (name, email, password)
+      VALUES (${name}, ${email}, ${hashedPassword})
+    `;
+
+    // This throws internally — let it bubble up
+    redirect('/login?success=1');
+  } catch (error: any) {
+    if (error?.digest?.startsWith('NEXT_REDIRECT')) {
+      throw error;
+    }
+
+    console.error('Register Error:', error);
+    return 'Database error: Failed to register user.';
   }
 }

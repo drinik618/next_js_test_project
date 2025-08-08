@@ -1,6 +1,7 @@
 import AcmeLogo from '@/app/ui/acme-logo';
 import LoginForm from '@/app/ui/login-form';
 import { Suspense } from 'react';
+import Link from 'next/link';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -19,6 +20,14 @@ export default function LoginPage() {
         <Suspense>
           <LoginForm />
         </Suspense>
+
+        {/* Register Link */}
+        <div className="text-center text-sm text-gray-600">
+          Don’t have an account?{' '}
+          <Link href="/register" className="text-blue-600 hover:underline">
+            Register here
+          </Link>
+        </div>
       </div>
     </main>
   );

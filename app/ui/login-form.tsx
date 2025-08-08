@@ -5,6 +5,7 @@ import {
   AtSymbolIcon,
   KeyIcon,
   ExclamationCircleIcon,
+  CheckCircleIcon,
 } from '@heroicons/react/24/outline';
 import { ArrowRightIcon } from '@heroicons/react/20/solid';
 import { Button } from './button';
@@ -15,6 +16,7 @@ import { useSearchParams } from 'next/navigation';
 export default function LoginForm() {
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get('callbackUrl') || '/dashboard';
+  const success = searchParams.get('success');
   const [errorMessage, formAction, isPending] = useActionState(
     authenticate,
     undefined,
@@ -26,6 +28,14 @@ export default function LoginForm() {
         <h1 className={`${lusitana.className} mb-3 text-2xl`}>
           Please log in to continue.
         </h1>
+
+        {success === '1' && (
+          <div className="mb-4 flex items-center gap-2 rounded-md bg-green-100 px-3 py-2 text-sm text-green-700">
+            <CheckCircleIcon className="h-5 w-5" />
+            <p>Account created successfully. Please log in.</p>
+          </div>
+        )}
+
         <div className="w-full">
           <div>
             <label
